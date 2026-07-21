@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A private, browser-based QR code generator for text, links, Wi-Fi networks, and email.">
+  <meta name="theme-color" content="#111827">
+  <title>QR Generator</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="QR Generator home">
+      <span class="brand-mark" aria-hidden="true">▦</span>
+      <span>QR Generator</span>
+    </a>
+    <a class="github-link" href="https://github.com/mffg1993/qr-generator" target="_blank" rel="noreferrer">View source</a>
+  </header>
+
+  <main class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">Free · private · no account</p>
+      <h1 id="page-title">Create a QR code in your browser</h1>
+      <p>Your content stays on this device. The website generates the code locally and does not submit your text or passwords to a server.</p>
+    </section>
+
+    <section class="generator" aria-label="QR code generator">
+      <div class="panel controls-panel">
+        <div class="field-group">
+          <span class="field-label">QR content</span>
+          <div class="tabs" role="tablist" aria-label="QR content type">
+            <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="text-fields" data-type="text">Text or URL</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="wifi-fields" data-type="wifi">Wi-Fi</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="email-fields" data-type="email">Email</button>
+          </div>
+        </div>
+
+        <div id="text-fields" class="content-fields" data-panel="text">
+          <label for="text-input">Text or website address</label>
+          <textarea id="text-input" rows="6" placeholder="https://example.com">https://mffg1993.github.io/</textarea>
+        </div>
+
+        <div id="wifi-fields" class="content-fields" data-panel="wifi" hidden>
+          <label for="wifi-name">Network name</label>
+          <input id="wifi-name" type="text" autocomplete="off" placeholder="Wi-Fi name">
+
+          <div class="field-row">
+            <div>
+              <label for="wifi-security">Security</label>
+              <select id="wifi-security">
+                <option value="WPA">WPA/WPA2/WPA3</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">No password</option>
+              </select>
+            </div>
+            <div>
+              <label for="wifi-password">Password</label>
+              <input id="wifi-password" type="password" autocomplete="new-password" placeholder="Password">
+            </div>
+          </div>
+
+          <label class="checkbox-label" for="wifi-hidden">
+            <input id="wifi-hidden" type="checkbox">
+            <span>Hidden network</span>
+          </label>
+        </div>
+
+        <div id="email-fields" class="content-fields" data-panel="email" hidden>
+          <label for="email-address">Email address</label>
+          <input id="email-address" type="email" autocomplete="email" placeholder="name@example.com">
+
+          <label for="email-subject">Subject <span class="optional">optional</span></label>
+          <input id="email-subject" type="text" placeholder="Email subject">
+
+          <label for="email-body">Message <span class="optional">optional</span></label>
+          <textarea id="email-body" rows="4" placeholder="Email message"></textarea>
+        </div>
+
+        <details class="appearance-options">
+          <summary>Appearance and quality</summary>
+          <div class="details-body">
+            <div class="field-row">
+              <div>
+                <label for="qr-size">Image size</label>
+                <select id="qr-size">
+                  <option value="512">512 × 512 px</option>
+                  <option value="1024">1024 × 1024 px</option>
+                  <option value="256">256 × 256 px</option>
+                </select>
+              </div>
+              <div>
+                <label for="error-level">Error correction</label>
+                <select id="error-level">
+                  <option value="M">Medium</option>
+                  <option value="L">Low</option>
+                  <option value="Q">Quartile</option>
+                  <option value="H">High</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row color-row">
+              <label for="dark-color">
+                Foreground
+                <input id="dark-color" type="color" value="#111827">
+              </label>
+              <label for="light-color">
+                Background
+                <input id="light-color" type="color" value="#ffffff">
+              </label>
+            </div>
+          </div>
+        </details>
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+        <button id="generate-button" class="primary-button" type="button">Generate QR code</button>
+      </div>
+
+      <div class="panel preview-panel">
+        <div class="preview-heading">
+          <div>
+            <p class="field-label">Preview</p>
+            <p id="status-message" class="status-message" aria-live="polite">Ready to generate</p>
+          </div>
+        </div>
+
+        <div id="qr-stage" class="qr-stage">
+          <canvas id="qr-canvas" width="512" height="512" aria-label="Generated QR code"></canvas>
+        </div>
+
+        <div class="download-actions">
+          <button id="download-png" class="secondary-button" type="button" disabled>Download PNG</button>
+          <button id="download-svg" class="secondary-button" type="button" disabled>Download SVG</button>
+          <button id="copy-image" class="secondary-button" type="button" disabled>Copy image</button>
+        </div>
+        <p class="scan-note">Test the finished code with a phone before printing or distributing it.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Open-source QR generator. Built with the MIT-licensed <a href="https://github.com/soldair/node-qrcode" target="_blank" rel="noreferrer">node-qrcode</a> library.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
