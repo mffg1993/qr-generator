@@ -3,32 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A private, browser-based QR code generator for text, links, Wi-Fi networks, and email.">
+  <meta name="description" content="A browser-based QR code generator for text, links, Wi-Fi networks, and email.">
   <meta name="theme-color" content="#111827">
-  <title>QR Generator</title>
+  <title>Photonics QR Generator</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="./" aria-label="QR Generator home">
+    <a class="brand" href="./" aria-label="Photonics QR Generator home">
       <span class="brand-mark" aria-hidden="true">▦</span>
-      <span>QR Generator</span>
+      <span>Photonics QR Generator</span>
     </a>
-    <a class="github-link" href="https://github.com/mffg1993/qr-generator" target="_blank" rel="noreferrer">View source</a>
+    <a class="github-link"
+       href="https://github.com/mffg1993/PhotonicsQRGenerator"
+       target="_blank"
+       rel="noreferrer">Source code</a>
   </header>
 
   <main class="page-shell">
     <section class="intro" aria-labelledby="page-title">
-      <p class="eyebrow">Free · private · no account</p>
-      <h1 id="page-title">Create a QR code in your browser</h1>
-      <p>Your content stays on this device. The website generates the code locally and does not submit your text or passwords to a server.</p>
+      <h1 id="page-title">QR code generator</h1>
+      <p>Create a code for text, a link, Wi-Fi access, or email. Everything is generated locally in your browser.</p>
     </section>
 
     <section class="generator" aria-label="QR code generator">
       <div class="panel controls-panel">
         <div class="field-group">
-          <span class="field-label">QR content</span>
+          <span class="field-label">Content type</span>
           <div class="tabs" role="tablist" aria-label="QR content type">
             <button class="tab is-active" type="button" role="tab" aria-selected="true" aria-controls="text-fields" data-type="text">Text or URL</button>
             <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="wifi-fields" data-type="wifi">Wi-Fi</button>
@@ -82,7 +84,7 @@
           <div class="details-body">
             <div class="field-row">
               <div>
-                <label for="qr-size">Image size</label>
+                <label for="qr-size">Download size</label>
                 <select id="qr-size">
                   <option value="512">512 × 512 px</option>
                   <option value="1024">1024 × 1024 px</option>
@@ -121,29 +123,35 @@
         <div class="preview-heading">
           <div>
             <p class="field-label">Preview</p>
-            <p id="status-message" class="status-message" aria-live="polite">Ready to generate</p>
+            <p id="status-message" class="status-message" aria-live="polite">Ready</p>
           </div>
         </div>
 
         <div id="qr-stage" class="qr-stage">
-          <canvas id="qr-canvas" width="512" height="512" aria-label="Generated QR code"></canvas>
+          <div id="qr-preview" class="qr-preview" aria-live="polite">
+            <p class="preview-placeholder">Your QR code will appear here.</p>
+          </div>
         </div>
+
+        <!-- Used for PNG generation and clipboard export; the SVG above is the visible preview. -->
+        <canvas id="qr-canvas" width="512" height="512" hidden></canvas>
 
         <div class="download-actions">
           <button id="download-png" class="secondary-button" type="button" disabled>Download PNG</button>
           <button id="download-svg" class="secondary-button" type="button" disabled>Download SVG</button>
           <button id="copy-image" class="secondary-button" type="button" disabled>Copy image</button>
         </div>
-        <p class="scan-note">Test the finished code with a phone before printing or distributing it.</p>
+
+        <p class="scan-note">Test the code with a phone before printing it.</p>
       </div>
     </section>
   </main>
 
   <footer>
-    <p>Open-source QR generator. Built with the MIT-licensed <a href="https://github.com/soldair/node-qrcode" target="_blank" rel="noreferrer">node-qrcode</a> library.</p>
+    <p>Open-source browser tool using the MIT-licensed <a href="https://github.com/soldair/node-qrcode" target="_blank" rel="noreferrer">node-qrcode</a> library.</p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.2.2/build/qrcode.min.js"></script>
-  <script src="app.js"></script>
+  <script src="./qrcode.min.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

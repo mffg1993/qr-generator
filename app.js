@@ -23,6 +23,7 @@ const elements = {
   darkColor: document.querySelector("#dark-color"),
   lightColor: document.querySelector("#light-color"),
   canvas: document.querySelector("#qr-canvas"),
+  preview: document.querySelector("#qr-preview"),
   generate: document.querySelector("#generate-button"),
   downloadPng: document.querySelector("#download-png"),
   downloadSvg: document.querySelector("#download-svg"),
@@ -49,15 +50,13 @@ function setActiveType(type) {
 }
 
 function escapeWifiValue(value) {
-  return value.replace(/([\\;,:"])/g, "\\$1");
+  return value.replace(/([\\;,:\"])/g, "\\$1");
 }
 
 function buildPayload() {
   if (state.type === "text") {
     const value = elements.textInput.value.trim();
-    if (!value) {
-      throw new Error("Enter some text or a website address.");
-    }
+    if (!value) throw new Error("Enter some text or a website address.");
     state.filename = "text-qr-code";
     return value;
   }
@@ -67,9 +66,7 @@ function buildPayload() {
     const security = elements.wifiSecurity.value;
     const password = elements.wifiPassword.value;
 
-    if (!ssid) {
-      throw new Error("Enter the Wi-Fi network name.");
-    }
+    if (!ssid) throw new Error("Enter the Wi-Fi network name.");
     if (security !== "nopass" && !password) {
       throw new Error("Enter the Wi-Fi password or select ‘No password’.");
     }
@@ -87,6 +84,7 @@ function buildPayload() {
   const params = new URLSearchParams();
   const subject = elements.emailSubject.value.trim();
   const body = elements.emailBody.value.trim();
+
   if (subject) params.set("subject", subject);
   if (body) params.set("body", body);
 
@@ -110,7 +108,7 @@ function qrOptions() {
 function showError(message) {
   elements.formError.textContent = message;
   elements.formError.hidden = false;
-  elements.status.textContent = "Nothing generated";
+  elements.status.textContent = "Not generated";
 }
 
 function clearError() {
@@ -121,14 +119,29 @@ function clearError() {
 function setActionButtons(enabled) {
   elements.downloadPng.disabled = !enabled;
   elements.downloadSvg.disabled = !enabled;
-  elements.copyImage.disabled = !enabled || !navigator.clipboard || typeof ClipboardItem === "undefined";
+  elements.copyImage.disabled =
+    !enabled || !navigator.clipboard || typeof ClipboardItem === "undefined";
+}
+
+function showSvgPreview(svgMarkup) {
+  elements.preview.innerHTML = svgMarkup;
+  const svg = elements.preview.querySelector("svg");
+
+  if (svg) {
+    // Let CSS scale the preview while preserving the complete square viewBox.
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", "Generated QR code");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  }
 }
 
 async function generateQrCode() {
   clearError();
 
   if (typeof QRCode === "undefined") {
-    showError("The QR library did not load. Check your internet connection and reload the page.");
+    showError("The local QR library did not load. Confirm that qrcode.min.js is in the repository root.");
     return;
   }
 
@@ -136,11 +149,18 @@ async function generateQrCode() {
     state.payload = buildPayload();
     const options = qrOptions();
 
+    // The hidden canvas is used for PNG and clipboard output.
     await QRCode.toCanvas(elements.canvas, state.payload, options);
-    state.svg = await QRCode.toString(state.payload, { ...options, type: "svg" });
 
+    // The visible preview uses SVG so it scales without being cropped.
+    state.svg = await QRCode.toString(state.payload, {
+      ...options,
+      type: "svg",
+    });
+
+    showSvgPreview(state.svg);
     setActionButtons(true);
-    elements.status.textContent = "QR code generated";
+    elements.status.textContent = "Generated";
   } catch (error) {
     setActionButtons(false);
     showError(error instanceof Error ? error.message : "Could not generate the QR code.");
@@ -165,7 +185,9 @@ function downloadPng() {
 }
 
 function downloadSvg() {
-  const blob = new Blob([state.svg], { type: "image/svg+xml;charset=utf-8" });
+  const blob = new Blob([state.svg], {
+    type: "image/svg+xml;charset=utf-8",
+  });
   downloadBlob(blob, `${state.filename}.svg`);
 }
 
@@ -178,8 +200,10 @@ async function copyImage() {
       }, "image/png");
     });
 
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-    elements.status.textContent = "Image copied to clipboard";
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": blob }),
+    ]);
+    elements.status.textContent = "Copied to clipboard";
   } catch (error) {
     showError(error instanceof Error ? error.message : "Your browser could not copy the image.");
   }
